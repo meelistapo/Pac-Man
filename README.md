@@ -1,2 +1,2 @@
-Pac
+Programeerise projekt "Pac-Man"
 ===
