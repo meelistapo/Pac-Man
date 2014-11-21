@@ -1,6 +1,6 @@
 #__author__ = 'Meelis Tapo'
 __author__ = 'Eduard'
-
+#push - it's a boy
 #TODO game over graafika, pluss mängu uuesti laadimine pärast elude kaotust
 #TODO tondid parkinsonist terveks ravida/loogika (chaser, ambusher, fickle, stupid)
 #TODO tonte juurde
