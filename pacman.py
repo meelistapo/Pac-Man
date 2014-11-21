@@ -1,4 +1,4 @@
-__author__ = 'Meelis Tapo'
+#__author__ = 'Meelis Tapo'
 __author__ = 'Eduard'
 
 #TODO game over graafika, pluss mängu uuesti laadimine pärast elude kaotust
