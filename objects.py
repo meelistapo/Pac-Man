@@ -1,10 +1,12 @@
 __author__ = 'Eduard'
 import random
-from time import sleep
+from game import *
 class moving_obj:
+    pac = None
     ghosts = []
     pac_imgs = []
     ghost_imgs = []
+    moving = []
     def __init__(self, start_pos, parent, img, coll_pel = False, coll_ghost = False, att=None):
         self.coll_pel = coll_pel
         self.coll_ghost = coll_ghost
@@ -26,16 +28,18 @@ class moving_obj:
         self.respawnindex = 0
         if self.att != "player":
             moving_obj.ghosts.append(self)
+        else:
+            moving_obj.pac = self
     def move(self):
         if (not self.pos[0]%25 and not self.pos[1]%25) and (self.pos[0]%50 or self.pos[1]%50):
             self.possible_dir.clear()
-            if [self.pos[0]+50,self.pos[1]] not in immov_obj.walls:
+            if [self.pos[0]+50,self.pos[1]] not in immov_obj.walls.values():
                 self.possible_dir.append([10,0])
-            if [self.pos[0]-50,self.pos[1]] not in immov_obj.walls:
+            if [self.pos[0]-50,self.pos[1]] not in immov_obj.walls.values():
                 self.possible_dir.append([-10,0])
-            if [self.pos[0],self.pos[1]+50] not in immov_obj.walls:
+            if [self.pos[0],self.pos[1]+50] not in immov_obj.walls.values():
                 self.possible_dir.append([0,10])
-            if [self.pos[0],self.pos[1]-50] not in immov_obj.walls:
+            if [self.pos[0],self.pos[1]-50] not in immov_obj.walls.values():
                 self.possible_dir.append([0,-10])
             if self.dir != None and self.att != "player" and [-self.dir[0],-self.dir[1]] in self.possible_dir:
                 self.possible_dir.remove([-self.dir[0],-self.dir[1]])
@@ -84,10 +88,7 @@ class moving_obj:
                     for ghost in moving_obj.ghosts:
                         ghost.skipturns = 0
                     self.parent.delete(self.id)
-                    #self.die()
                     self.lives -= 1
-                  #  sleep(0.1)
-                    #self.spawn()
                     self.id = self.parent.create_image(self.start_pos[0], self.start_pos[1], image=self.dir_imgs[0])
                     self.pos = self.start_pos
                     self.dir, self.new_dir = None, None
@@ -128,10 +129,9 @@ class moving_obj:
             print(self.respawnindex)
 
 class immov_obj:
-    walls = []
+    walls = {}
     pellets = {}
     def __init__(self, pos, parent, img, is_pellet=False):
-
         self.pos = pos
         self.parent = parent
         self.img = img
@@ -139,4 +139,4 @@ class immov_obj:
         if is_pellet:
             immov_obj.pellets[self.id] = self.pos
         else:
-            immov_obj.walls.append(self.pos)
+            immov_obj.walls[self.id] = self.pos

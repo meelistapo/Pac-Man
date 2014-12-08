@@ -8,16 +8,19 @@ __author__ = 'Eduard'
 #TODO powerupid
 
 from tkinter import *
+from game import *
 from objects import *
-from menu import *
-paused = True
 
 # akna loomine
 raam = Tk()
 raam.title("Pacman")
 raam.geometry("850x850")
-tahvel = Canvas(raam, width=850, height=800, background="black")
-tahvel.grid()
+tahvel = Canvas(raam, width=850, height=850, bg="black")
+tahvel.grid_forget()
+menu = Canvas(raam, width=850, height=850, bg="black")
+menu.grid()
+over = Canvas(raam, width=850, height=850, bg="black")
+over.grid_forget()
 
 # meedia sisselugemine
 immov_obj.wall_img = PhotoImage(file="media/wall.png")
@@ -44,82 +47,96 @@ moving_obj.ghost_imgs = [PhotoImage(file="media/ghosts/ghost_red.png"),
                              PhotoImage(file="media/ghosts/ghost_pink.png"),
                              PhotoImage(file="media/ghosts/ghost_blue.png"),
                              PhotoImage(file="media/ghosts/ghost_eyes.png")]
-
-def create_level(file="levels/001"):
-    global pacm
-    global ghosts
-    ghosts = []
-    x,y = 0,0
-    levelfile = open(file)
-    for line in levelfile:
-        line = line.strip("\n")
-        for elem in line:
-            if elem == "#":
-                immov_obj([x*50+25,y*50+25], tahvel, immov_obj.wall_img)
-            elif elem == "o":
-                immov_obj([x*50+25,y*50+25], tahvel, immov_obj.pellet_img, is_pellet=True)
-            elif elem == "P":
-                pacm = moving_obj([x*50+25,y*50+25], tahvel, moving_obj.pac_imgs[0][0], att="player", coll_ghost=True, coll_pel=True)
-            elif elem == "S":
-                ghosts.append(moving_obj([x*50+25,y*50+25], tahvel, moving_obj.ghost_imgs[0]))
-            elif elem == "C":
-                ghosts.append(moving_obj([x*50+25,y*50+25], tahvel, moving_obj.ghost_imgs[1]))
-            elif elem == "T":
-                ghosts.append(moving_obj([x*50+25,y*50+25], tahvel, moving_obj.ghost_imgs[2]))
-            x += 1
-        y += 1
-        x = 0
-    levelfile.close()
-    #----------------------------------------------------------
+thisgame = game(tahvel)
+thisgame.parent=menu
+thisgame.create_mainmenu()
 
 def nool_üles(event):
-    if not paused:
-        pacm.new_dir = [0,-10]
-        pacm.new_dir_imgs = moving_obj.pac_imgs[1]
+    if thisgame.state == "game":
+        moving_obj.pac.new_dir = [0,-10]
+        moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[1]
+    elif thisgame.state == "menu":
+        thisgame.nextselection(-1)
 
 def nool_alla(event):
-    if not paused:
-        pacm.new_dir = [0,10]
-        pacm.new_dir_imgs = moving_obj.pac_imgs[2]
+    if thisgame.state == "game":
+        moving_obj.pac.new_dir = [0,10]
+        moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[2]
+    elif thisgame.state == "menu":
+        thisgame.nextselection(1)
 
 def nool_vasakule(event):
-    if not paused:
-        pacm.new_dir = [-10,0]
-        pacm.new_dir_imgs = moving_obj.pac_imgs[3]
+    if thisgame.state == "game":
+        moving_obj.pac.new_dir = [-10,0]
+        moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[3]
 
 def nool_paremale(event):
-    if not paused:
-        pacm.new_dir = [10,0]
-        pacm.new_dir_imgs = moving_obj.pac_imgs[0]
+    if thisgame.state == "game":
+        moving_obj.pac.new_dir = [10,0]
+        moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[0]
 
-def pause(event):
-    global paused
-    if paused:
-        paused = False
-    else:
-        paused = True
+def spacebar_press(event):
+    if thisgame.state == "menu":
+        if thisgame.selection == 0:
+            menu.grid_forget()
+            thisgame.parent = tahvel
+            tahvel.grid()
+            thisgame.create_level()
+            thisgame.create_gamemenu()
+            thisgame.state = "game"
+        elif thisgame.selection == 1:
+            pass
+        elif thisgame.selection == 2:
+            pass
+        elif thisgame.selection == 3:
+            raam.destroy()
+    elif thisgame.state == "game":
+        thisgame.state = "pause"
+    elif thisgame.state == "pause":
+        thisgame.state = "game"
+    elif thisgame.state == "over":
+        pass #tagasi algmenüüsse
+
+def escape_press(event):
+    if thisgame.state == "menu":
+        raam.destroy()
+    elif thisgame.state != "menu":
+        thisgame.state = "menu"
+        for elem in immov_obj.walls:
+            tahvel.delete(elem)
+        for elem in immov_obj.pellets:
+            tahvel.delete(elem)
+        for elem in moving_obj.ghosts:
+            tahvel.delete(elem.id)
+        tahvel.delete(moving_obj.pac.id)
+        immov_obj.walls = {}
+        immov_obj.pellets = {}
+        moving_obj.pac = None
+        moving_obj.ghosts = []
+        moving_obj.moving = []
+        for elem in game.allobjects:
+            elem.config(text="")
+        thisgame.parent = menu
+        tahvel.grid_forget()
+        menu.grid()
 
 # seon nooleklahvid vastavate funktsioonidega
 raam.bind_all("<Up>", nool_üles)
 raam.bind_all("<Down>",  nool_alla)
 raam.bind_all("<Left>",  nool_vasakule)
 raam.bind_all("<Right>", nool_paremale)
-raam.bind_all("<space>", pause)
+raam.bind_all("<space>", spacebar_press)
+raam.bind_all("<Escape>", escape_press)
 
 def uuenda():
-    global paused
-    if not paused:
+    if thisgame.state == "game":
         for elem in moving_obj.ghosts:
             elem.move()
-        pacm.move()
-        menu.score_var.config(text=pacm.score)
-        menu.lives_var.config(text=pacm.lives)
+        moving_obj.pac.move()
+        thisgame.score.config(text="SCORE:"+str(moving_obj.pac.score))
+        thisgame.lives.config(text="LIVES:"+str(moving_obj.pac.lives))
     # ootame 0,1 sekundit ja siis uuendame positsiooni
     raam.after(80, uuenda)
 
-create_level()
-menu = menu(raam)
 uuenda()
-
-# ilmutame akna ekraanile
 raam.mainloop()
