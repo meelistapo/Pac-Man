@@ -7,7 +7,7 @@ class game:
     allobjects = []
     def __init__(self, parent):
         self.state = "menu" #game/over/pause/menu
-        self.level = "001"
+        self.level = "003"
         self.parent = parent
         self.selection = None
         self.menubuttons = []
@@ -20,7 +20,7 @@ class game:
             line = line.strip("\n")
             for elem in line:
                 if elem == "#":
-                    immov_obj([x*50+25,y*50+25], self.parent, immov_obj.wall_img)
+                    immov_obj([x*50+25,y*50+25], self.parent, immov_obj.wall_img, is_wall = True)
                 elif elem == "o":
                     immov_obj([x*50+25,y*50+25], self.parent, immov_obj.pellet_img, is_pellet=True)
                 elif elem == "P":
@@ -42,7 +42,7 @@ class game:
             self.selection = 3
         if self.selection > 3:
             self.selection = 0
-        self.selection_pointer.place(x=35, y=300+self.selection*40)
+        self.selection_pointer.place(x=35, y=100+self.selection*40)
 
     def create_gamemenu(self):
         self.score = Label(self.parent, text="SCORE:"+str(moving_obj.pac.score), font=self.font, fg="white", bg="black")
@@ -54,14 +54,15 @@ class game:
 
     def create_mainmenu(self):
         self.selection = 0
-        self.menubuttons.append(Label(self.parent, text="PLAY", font=self.font, fg="white", bg="black"))
-        self.menubuttons.append(Label(self.parent, text="LEVEL: 001", font=self.font, fg="white", bg="black"))
-        self.menubuttons.append(Label(self.parent, text="HELP", font=self.font, fg="white", bg="black"))
-        self.menubuttons.append(Label(self.parent, text="EXIT", font=self.font, fg="white", bg="black"))
-        self.selection_pointer = Label(self.parent, text=">", font=self.font, fg="white", bg="black")
+        self.menubuttons.append(Label(self.parent, text="PLAY", font=self.font, fg="white", bg="gray"))
+        self.menubuttons.append(Label(self.parent, text="LEVEL: 001", font=self.font, fg="white", bg="gray"))
+        self.menubuttons.append(Label(self.parent, text="HELP", font=self.font, fg="white", bg="gray"))
+        self.menubuttons.append(Label(self.parent, text="EXIT", font=self.font, fg="white", bg="gray"))
+        self.selection_pointer = Label(self.parent, text=">", font=self.font, fg="white", bg="gray")
         for i in range(len(self.menubuttons)):
-            self.menubuttons[i].place(x=50,y=300+i*40)
-        self.selection_pointer.place(x=35, y=300+self.selection*40)
+            self.menubuttons[i].place(x=50,y=100+i*40)
+        self.selection_pointer.place(x=35, y=100+self.selection*40)
+        immov_obj([425,425], self.parent, immov_obj.menu_img)
 
     def create_overmenu(self):
         pass

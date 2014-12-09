@@ -76,6 +76,7 @@ class moving_obj:
         if self.coll_pel and (self.pos in immov_obj.pellets.values()):
             self.score += 100
             for k, v in immov_obj.pellets.items():
+                # if abs(self.pos[0]-v[0])<30 and abs(self.pos[1]-v[1])<30: ei saand tööle
                 if v == self.pos:
                     self.parent.delete(k)
                     break
@@ -106,7 +107,7 @@ class moving_obj:
                 self.img_index+=1
         self.parent.delete(self.id)
         self.id = self.parent.create_image(self.pos[0], self.pos[1], image=self.dir_imgs[self.img_index])
-        print("swapped to {}".format(self.dir_imgs[self.img_index]))
+        # print("swapped to {}".format(self.dir_imgs[self.img_index]))
     def respawn(self):
         if not self.respawnindex:
             self.img_index = self.respawnindex
@@ -126,17 +127,16 @@ class moving_obj:
                 self.parent.create_image(self.pos[0], self.pos[1], image = self.dir_imgs[self.img_index])
                 self.img_index -= 1
             self.respawnindex += 1
-            print(self.respawnindex)
 
 class immov_obj:
     walls = {}
     pellets = {}
-    def __init__(self, pos, parent, img, is_pellet=False):
+    def __init__(self, pos, parent, img, is_pellet=False, is_wall=False):
         self.pos = pos
         self.parent = parent
         self.img = img
         self.id = self.parent.create_image(self.pos[0], self.pos[1], image=self.img)
         if is_pellet:
             immov_obj.pellets[self.id] = self.pos
-        else:
+        if is_wall:
             immov_obj.walls[self.id] = self.pos

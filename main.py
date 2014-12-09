@@ -12,19 +12,20 @@ from game import *
 from objects import *
 
 # akna loomine
-raam = Tk()
-raam.title("Pacman")
-raam.geometry("850x850")
-tahvel = Canvas(raam, width=850, height=850, bg="black")
+frame = Tk()
+frame.title("Pacman")
+frame.geometry("850x850")
+tahvel = Canvas(frame, width=850, height=850, bg="black")
 tahvel.grid_forget()
-menu = Canvas(raam, width=850, height=850, bg="black")
+menu = Canvas(frame, width=850, height=850, bg="black")
 menu.grid()
-over = Canvas(raam, width=850, height=850, bg="black")
+over = Canvas(frame, width=850, height=850, bg="black")
 over.grid_forget()
 
 # meedia sisselugemine
 immov_obj.wall_img = PhotoImage(file="media/wall.png")
 immov_obj.pellet_img = PhotoImage(file="media/pellet.png")
+immov_obj.menu_img = PhotoImage(file="media/menu.png")
 moving_obj.pac_imgs.append([PhotoImage(file="media/pacs/pac_e_1.png"),
                             PhotoImage(file="media/pacs/pac_e_2.png"),
                             PhotoImage(file="media/pacs/pac_e_3.png"),
@@ -41,36 +42,40 @@ moving_obj.pac_imgs.append([PhotoImage(file="media/pacs/pac_w_1.png"),
                             PhotoImage(file="media/pacs/pac_w_2.png"),
                             PhotoImage(file="media/pacs/pac_w_3.png"),
                             PhotoImage(file="media/pacs/pac_w_4.png")])
-moving_obj.ghost_imgs = [PhotoImage(file="media/ghosts/ghost_red.png"),
-                             PhotoImage(file="media/ghosts/ghost_green.png"),
-                             PhotoImage(file="media/ghosts/ghost_orange.png"),
-                             PhotoImage(file="media/ghosts/ghost_pink.png"),
-                             PhotoImage(file="media/ghosts/ghost_blue.png"),
+moving_obj.ghost_imgs = [PhotoImage(file="media/ghosts/helle.png"),
+                             PhotoImage(file="media/ghosts/vilo.png"),
+                             PhotoImage(file="media/ghosts/niitsoo.png"),
+                             PhotoImage(file="media/ghosts/prank.png"),
+                             PhotoImage(file="media/ghosts/vene.png"),
                              PhotoImage(file="media/ghosts/ghost_eyes.png")]
 thisgame = game(tahvel)
-thisgame.parent=menu
+thisgame.parent = menu
 thisgame.create_mainmenu()
 
-def nool_üles(event):
+
+
+
+
+def up_press(event):
     if thisgame.state == "game":
         moving_obj.pac.new_dir = [0,-10]
         moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[1]
     elif thisgame.state == "menu":
         thisgame.nextselection(-1)
 
-def nool_alla(event):
+def down_press(event):
     if thisgame.state == "game":
         moving_obj.pac.new_dir = [0,10]
         moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[2]
     elif thisgame.state == "menu":
         thisgame.nextselection(1)
 
-def nool_vasakule(event):
+def left_press(event):
     if thisgame.state == "game":
         moving_obj.pac.new_dir = [-10,0]
         moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[3]
 
-def nool_paremale(event):
+def right_press(event):
     if thisgame.state == "game":
         moving_obj.pac.new_dir = [10,0]
         moving_obj.pac.new_dir_imgs = moving_obj.pac_imgs[0]
@@ -89,17 +94,19 @@ def spacebar_press(event):
         elif thisgame.selection == 2:
             pass
         elif thisgame.selection == 3:
-            raam.destroy()
+            frame.destroy()
     elif thisgame.state == "game":
         thisgame.state = "pause"
     elif thisgame.state == "pause":
         thisgame.state = "game"
     elif thisgame.state == "over":
-        pass #tagasi algmenüüsse
+        thisgame.state = "menu"
+        thisgame.parent = menu
+        thisgame.create_mainmenu()
 
 def escape_press(event):
     if thisgame.state == "menu":
-        raam.destroy()
+        frame.destroy()
     elif thisgame.state != "menu":
         thisgame.state = "menu"
         for elem in immov_obj.walls:
@@ -121,12 +128,13 @@ def escape_press(event):
         menu.grid()
 
 # seon nooleklahvid vastavate funktsioonidega
-raam.bind_all("<Up>", nool_üles)
-raam.bind_all("<Down>",  nool_alla)
-raam.bind_all("<Left>",  nool_vasakule)
-raam.bind_all("<Right>", nool_paremale)
-raam.bind_all("<space>", spacebar_press)
-raam.bind_all("<Escape>", escape_press)
+frame.bind_all("<Up>", up_press)
+frame.bind_all("<Down>",  down_press)
+frame.bind_all("<Left>",  left_press)
+frame.bind_all("<Right>", right_press)
+frame.bind_all("<space>", spacebar_press)
+frame.bind_all("<Escape>", escape_press)
+
 
 def uuenda():
     if thisgame.state == "game":
@@ -136,7 +144,7 @@ def uuenda():
         thisgame.score.config(text="SCORE:"+str(moving_obj.pac.score))
         thisgame.lives.config(text="LIVES:"+str(moving_obj.pac.lives))
     # ootame 0,1 sekundit ja siis uuendame positsiooni
-    raam.after(80, uuenda)
+    frame.after(80, uuenda)
 
 uuenda()
-raam.mainloop()
+frame.mainloop()
