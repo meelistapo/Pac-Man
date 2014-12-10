@@ -1,2 +1,2 @@
-Programeerise projekt "Pac-Man"
+Programeerise projekt "Pacversity"
 ===
