@@ -9,29 +9,33 @@ class moving_obj:
     ghost_imgs = []
     moving = []
     def __init__(self, start_pos, parent, img, coll_pel = False, coll_ghost = False, att=None, name=None):
-        self.coll_pel = coll_pel
-        self.coll_ghost = coll_ghost
-        self.parent = parent
-        self.start_img = img
-        self.img_index = 0
-        self.dir_imgs = moving_obj.pac_imgs[0]
-        self.new_dir_imgs = None
+        self.coll_pel = coll_pel                #kas "põrkab" pelletitega
+        self.coll_ghost = coll_ghost            #kas "põrkab" tontidega
+        self.parent = parent                    #kuhu pilt joonistada
+        self.start_img = img                    #millise pildiga tekib
+        self.img_index = 0                      #suu liigutamise efekti saavutamiseks pendeldab 0 ja 1 vahel
+        self.dir_imgs = moving_obj.pac_imgs[0]  #sõltuvalt suunast erinev piltide järjend
+        self.new_dir_imgs = None                #millisest järjendist järgmisena pilte võtta
         self.id = self.parent.create_image(start_pos[0], start_pos[1], image=self.start_img)
-        self.start_pos = start_pos
-        self.pos = start_pos
-        self.dir = None
-        self.att = att
-        self.new_dir = None
-        self.possible_dir = []
-        self.ainepunktid = 0.0
-        self.hoiatused = 0
-        self.name = name
-        self.coll_name = None
+        self.start_pos = start_pos              #alustamise positsioon
+        self.pos = start_pos                    #enda positsioon
+        self.dir = None                         #liikumise suund
+        self.att = att                          #objekti tüüp (mängija/suvaliselt käituv tont/kerge loogikaga tont)
+        self.new_dir = None                     #suund kuhu järgmisel võimalusel keerata
+        self.possible_dir = []                  #suunad kuhu on võimalik liikuda
+        self.eap = 0.0
+        self.warnings = 0
+        self.name = name                        #objekti nimi
+        self.coll_name = None                   #mis nimelise (liikuva) objektiga kokku põrkas
         if self.att != "player":
             moving_obj.ghosts.append(self)
         else:
             moving_obj.pac = self
     def move(self, game):
+    #----------------------------------------------------------------    
+    #Igas ühikruudus värsekndame võimalike suundade järjendit.
+    #Tontidelt võtame ära võimaluse ümber pöörata ning vajadusel kontrollime "nägemisulatust"
+    #----------------------------------------------------------------
         if (not self.pos[0]%25 and not self.pos[1]%25) and (self.pos[0]%50 or self.pos[1]%50):
             self.possible_dir.clear()
             if [self.pos[0]+50,self.pos[1]] not in immov_obj.walls.values():
@@ -42,11 +46,15 @@ class moving_obj:
                 self.possible_dir.append([0,10])
             if [self.pos[0],self.pos[1]-50] not in immov_obj.walls.values():
                 self.possible_dir.append([0,-10])
-            if self.att != "player": #><
+            if self.att != "player":
                 if self.dir != None and [-self.dir[0],-self.dir[1]] in self.possible_dir and len(self.possible_dir) != 1:
                     self.possible_dir.remove([-self.dir[0],-self.dir[1]])
                 if self.att == "ai":
                     self.check_lineofsight()
+    #----------------------------------------------------------------
+    #Kui on võimalik muuta suund soovitud suunaks, muudame
+    #Kui tont "mõtleb" ning mängija on nägemisulatuses (samal x või y teljel ilma, et vahel oleks seinu),
+    #suund mängija poole, vastasel juhul suvaliseks võimalikest (v.a. tagasi)
     #----------------------------------------------------------------
         if self.att == "player":
             if self.new_dir in self.possible_dir:
@@ -66,6 +74,12 @@ class moving_obj:
         else:
             self.dir = self.possible_dir[random.randint(0,len(self.possible_dir)-1)]
     #----------------------------------------------------------------
+    #objektide liigutamine, mängija puhul ka piltide vahetamine
+    #et ühikruut on 50x50px, kuid samm on 10 px ning vahepeal suundi ei uuendata,
+    #muudame võimalike suundade järjendi siin järgmiselt:
+    #mängijal - edasi/tagasi
+    #tondil - edasi
+    #----------------------------------------------------------------
         if self.dir in self.possible_dir:
             if self.att == "player":
                 self.parent.move(self.id, self.dir[0], self.dir[1])
@@ -77,25 +91,29 @@ class moving_obj:
                 self.pos = [self.pos[0]+self.dir[0],self.pos[1]+self.dir[1]]
                 self.possible_dir = [self.dir]
     #----------------------------------------------------------------
+    #Kui mängija puutub kokku pelletiga, teeme järgmist
+    #----------------------------------------------------------------
         if self.coll_pel and (self.pos in immov_obj.pellets.values()):
-            if game.level == "baka":
-                self.ainepunktid += 180/130
+            if game.level == "bak":
+                self.eap += 180/130
             elif game.level == "mag":
-                self.ainepunktid += 120/129
+                self.eap += 120/129
             elif game.level == "dok":
-                self.ainepunktid += 240/129
+                self.eap += 240/129
             for k, v in immov_obj.pellets.items():
                 if v == self.pos:
                     self.parent.delete(k)
                     break
             del immov_obj.pellets[k]
     #----------------------------------------------------------------
+    #kui mängija põrkab kokku tondiga, teeme järgmist
+    #----------------------------------------------------------------
         if self.coll_ghost:
             for elem in moving_obj.ghosts:
                 if abs(self.pos[0]-elem.pos[0])<30 and abs(self.pos[1]-elem.pos[1])<30:
                     self.coll_name = elem.name
                     self.parent.delete(self.id)
-                    self.hoiatused += 1
+                    self.warnings += 1
                     self.id = self.parent.create_image(self.start_pos[0], self.start_pos[1], image=self.start_img)
                     self.pos = self.start_pos
                     self.dir, self.new_dir = None, None
@@ -105,6 +123,9 @@ class moving_obj:
                         ghost.id = ghost.parent.create_image(ghost.start_pos[0], ghost.start_pos[1], image=ghost.start_img)
                         ghost.dir, ghost.new_dir = None, None
                     break
+    #----------------------------------------------------------------
+    #pac'i suu liigutamise efekti saavutamise funktsioon
+    #----------------------------------------------------------------
     def swapimage(self):
         if self.att == "player":
             if self.img_index:
@@ -113,8 +134,13 @@ class moving_obj:
                 self.img_index+=1
         self.parent.delete(self.id)
         self.id = self.parent.create_image(self.pos[0], self.pos[1], image=self.dir_imgs[self.img_index])
+    #----------------------------------------------------------------
+    #Tondi nägemisulatuse saame siit kujul
+    #[[a,b], - x telje nägemisvahemik
+    #[c,d]] - y telje nägemisvahemik
+    #----------------------------------------------------------------
     def check_lineofsight(self):
-        self.lineofsight = [[0,0],[0,0]] # [[xrange][yrange]
+        self.lineofsight = [[0,0],[0,0]]
         i = 1
         while True:
             if [self.pos[0]-50*i, self.pos[1]] in immov_obj.walls.values():
@@ -141,6 +167,9 @@ class moving_obj:
             i += 1
 
 class immov_obj:
+    #----------------------------------------------------------------
+    #mitteliikuvad objektid(pelletid/müürid) siia
+    #----------------------------------------------------------------
     walls = {}
     pellets = {}
     def __init__(self, pos, parent, img, is_pellet=False, is_wall=False):
