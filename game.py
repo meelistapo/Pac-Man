@@ -135,6 +135,7 @@ class game:
                                     "Disclaimer: Pacversity loomel on vaadatud läbi huumoriprisma. Kõik dialoogid on fiktsionaalsed, ega oma mingisugust\n"
                                     "isiklikku tähendust väljaspool selle mängu konteksti."
                                     "\n"
+                                    "\n"
                                     "Nupud:\n"
                                     "\n"
                                     "Menüü - üles-alla liikumiseks kasuta nooli, selekteerimiseks vajuta 'Space' või 'Enter', mängu sulgemiseks 'Esc'.\n"
