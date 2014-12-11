@@ -13,7 +13,7 @@ class moving_obj:
         self.coll_ghost = coll_ghost            #kas "põrkab" tontidega
         self.parent = parent                    #kuhu pilt joonistada
         self.start_img = img                    #millise pildiga tekib
-        self.img_index = 0                      #nom-nom efekti saavutamiseks pendeldab 0 ja 1 vahel
+        self.img_index = 0                      #suu liigutamise efekti saavutamiseks pendeldab 0 ja 1 vahel
         self.dir_imgs = moving_obj.pac_imgs[0]  #sõltuvalt suunast erinev piltide järjend
         self.new_dir_imgs = None                #millisest järjendist järgmisena pilte võtta
         self.id = self.parent.create_image(start_pos[0], start_pos[1], image=self.start_img)
@@ -23,8 +23,8 @@ class moving_obj:
         self.att = att                          #objekti tüüp (mängija/suvaliselt käituv tont/kerge loogikaga tont)
         self.new_dir = None                     #suund kuhu järgmisel võimalusel keerata
         self.possible_dir = []                  #suunad kuhu on võimalik liikuda
-        self.ainepunktid = 0.0                  
-        self.hoiatused = 0                      
+        self.eap = 0.0
+        self.warnings = 0
         self.name = name                        #objekti nimi
         self.coll_name = None                   #mis nimelise (liikuva) objektiga kokku põrkas
         if self.att != "player":
@@ -94,12 +94,12 @@ class moving_obj:
     #Kui mängija puutub kokku pelletiga, teeme järgmist
     #----------------------------------------------------------------
         if self.coll_pel and (self.pos in immov_obj.pellets.values()):
-            if game.level == "baka":
-                self.ainepunktid += 180/130
+            if game.level == "bak":
+                self.eap += 180/130
             elif game.level == "mag":
-                self.ainepunktid += 120/129
+                self.eap += 120/129
             elif game.level == "dok":
-                self.ainepunktid += 240/129
+                self.eap += 240/129
             for k, v in immov_obj.pellets.items():
                 if v == self.pos:
                     self.parent.delete(k)
@@ -113,7 +113,7 @@ class moving_obj:
                 if abs(self.pos[0]-elem.pos[0])<30 and abs(self.pos[1]-elem.pos[1])<30:
                     self.coll_name = elem.name
                     self.parent.delete(self.id)
-                    self.hoiatused += 1
+                    self.warnings += 1
                     self.id = self.parent.create_image(self.start_pos[0], self.start_pos[1], image=self.start_img)
                     self.pos = self.start_pos
                     self.dir, self.new_dir = None, None
@@ -124,7 +124,7 @@ class moving_obj:
                         ghost.dir, ghost.new_dir = None, None
                     break
     #----------------------------------------------------------------
-    #nom-nom efekti saavutamise funktsioon
+    #pac'i suu liigutamise efekti saavutamise funktsioon
     #----------------------------------------------------------------
     def swapimage(self):
         if self.att == "player":
