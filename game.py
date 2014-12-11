@@ -132,10 +132,16 @@ class game:
                                     "õppeastmes jagatavad ainepunktid (rohelised rõngad) ja vältida seejuures konflikte teenindava personaliga. "
                                     "Käitu korralikult, sest juba kolm hoiatust toovad kaasa eksmatrikuleerimise.\nVaata järgi, kas sinus on PhD materjali!\n"
                                     "\n"
+                                    "Disclaimer: Pacversity loomel on vaadatud läbi huumoriprisma. Kõik dialoogid on fiktsionaalsed, ega oma mingisugust\n"
+                                    "isiklikku tähendust väljaspool selle mängu konteksti."
+                                    "\n"
                                     "Nupud:\n"
                                     "\n"
                                     "Menüü - üles-alla liikumiseks kasuta nooli, selekteerimiseks vajuta 'Space' või 'Enter', mängu sulgemiseks 'Esc'.\n"
-                                    "Mäng - liikumiseks kasuta nooli, vahepausi alustamiseks või lõpetamiseks vajuta 'Space' või 'Enter', 'Esc' viib sind tagasi peamenüüsse.")
+                                    "Mäng - liikumiseks kasuta nooli, vahepausi alustamiseks või lõpetamiseks vajuta 'Space' või 'Enter', 'Esc' viib sind tagasi peamenüüsse.\n"
+                                    "\n"
+                                    "Mängu autorid:\n"
+                                    "Eduard Šengals, Meelis Tapo 2014")
 
 
 
