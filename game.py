@@ -18,7 +18,7 @@ class game:
         self.textobjects = []       #mängumenüü tekstiobjektid
         self.menu_font = font.Font(family='Helvetica', size=12, weight='bold')  #menüü tekstide kirjastiil
         self.warning_font = font.Font(family="Helvetica", size=10)              #hoiatuste kirjastiil
-        self.highestlevelcompleted =                                            #raskeim läbitud level
+        self.highestlevelcompleted = None                                       #raskeim läbitud level
         self.turns_to_show_warning = 0                                          #hoiatuse kuva aeg
 
     #----------------------------------------------------------------
