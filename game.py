@@ -1,12 +1,19 @@
 __author__ = 'Meelis Tapo'
 __author__ = 'Eduard Šengals'
+
+'''
+Selles failis on defineeritud mängu raamistik ehk see,
+kuidas käituvad erinevad menüüd ja kuidas luuakse hüpikaknad.
+Siin luuakse ka levelid.
+'''
+
 from objects import *
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import Label
 from tkinter import font
-import random
+from random import randint
 
 class game:
     def __init__(self, parent):
@@ -18,8 +25,9 @@ class game:
         self.textobjects = []       #mängumenüü tekstiobjektid
         self.menu_font = font.Font(family='Helvetica', size=12, weight='bold')  #menüü tekstide kirjastiil
         self.warning_font = font.Font(family="Helvetica", size=10)              #hoiatuste kirjastiil
-        self.highestlevelcompleted = None                                       #raskeim läbitud level
+        self.highestlevelcompleted = None                                      #raskeim läbitud level
         self.turns_to_show_warning = 0                                          #hoiatuse kuva aeg
+        self.hide = False
 
     #----------------------------------------------------------------
     #leveli loomine
@@ -42,30 +50,30 @@ class game:
                     immov_obj([x*50+25,y*50+25], self.parent, immov_obj.pellet_img, is_pellet=True)
                 elif elem == "P":
                     moving_obj([x*50+25,y*50+25], self.parent, moving_obj.pac_imgs[0][0], att="player", coll_ghost=True, coll_pel=True)
-                elif elem == "V":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[0], name='vilo')
-                elif elem == "W":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[1], name='vene')
-                elif elem == "R":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[2], name='prank')
                 elif elem == "N":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[3], name='niitsoo')
-                elif elem == "H":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[4], name='hein')
-                elif elem == "L":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[5], name='plank')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[0], name='niitsoo')
                 elif elem == "T":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[6], name='tamm')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[1], name='tamm')
                 elif elem == "O":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[7], name='nolv')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[2], name='nolv')
                 elif elem == "U":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[8], name='pungas')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[3], name='pungas')
+                elif elem == "R":
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[4], name='prank')
                 elif elem == "E":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[9], name='paales')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[5], name='paales')
                 elif elem == "A":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[10], name='annamaa')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[6], name='annamaa')
                 elif elem == "M":
-                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[11], name='palm')
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[7], name='palm')
+                elif elem == "H":
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[8], name='hein')
+                elif elem == "L":
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[9], name='plank')
+                elif elem == "V":
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[10], name='vilo')
+                elif elem == "W":
+                    moving_obj([x*50+25,y*50+25], self.parent, moving_obj.ghost_imgs[11], name='vene')
                 x += 1
             y += 1
             x = 0
@@ -154,12 +162,28 @@ class game:
             messagebox.showwarning(message = "Mingi eilane oled vä? Doktorantuuri saad ainult magistrikraadiga!")
 
     #----------------------------------------------------------------
+    #Hoiatusõnumi loomine (kuvatakse tondiga kokkupõrkel)
+    #----------------------------------------------------------------
+    def create_warning_message(self):
+        if not self.hide:
+            textfile = open("media/texts.txt", encoding="utf-8")
+            ghostmsg = {}
+            for line in textfile:
+                ghostmsg[line.split(": ")[0].lstrip("\ufeff")] = line.split(": ")[1].split("; ")
+            textfile.close()
+            warning_msg = ghostmsg[moving_obj.pac.coll_name][randint(0,1)]
+            if '|' in warning_msg:
+                warning_txt = warning_msg.split('|')
+                warning_msg = warning_txt[0]+'\n'+warning_txt[1].strip()
+            return self.last_warning.config(text=warning_msg, justify='left')
+
+    #----------------------------------------------------------------
     #abisõnumi loomine (kuvatakse peamenüüst 'Abi' valimisel)
     #----------------------------------------------------------------
     def create_help_message(self):
         messagebox.showinfo(message="Juhend:\n"
                                     "Pacversity on mäng, milles sinu poolt juhitud Pacman proovib omandada kõrgharidust. Mängu eesmärk on kokku korjata kõik "
-                                    "õppeastmes jagatavad ainepunktid (rohelised rõngad) ja vältida seejuures konflikte teenindava personaliga. "
+                                    "õppeastmes jagatavad ainepunktid (rohelised kettad) ja vältida seejuures konflikte teenindava personaliga. "
                                     "Käitu korralikult, sest juba kolm hoiatust toovad kaasa eksmatrikuleerimise.\nVaata järgi, kas sinus on PhD materjali!\n"
                                     "\n"
                                     "Disclaimer:\n"
@@ -168,7 +192,9 @@ class game:
                                     "\n"
                                     "Nupud:\n"
                                     "Menüü - üles-alla liikumiseks kasuta nooli, selekteerimiseks vajuta 'Space' või 'Enter', mängu sulgemiseks 'Esc'.\n"
-                                    "Mäng - liikumiseks kasuta nooli, vahepausi alustamiseks või lõpetamiseks vajuta 'Space' või 'Enter', 'Esc' viib sind tagasi peamenüüsse.\n"
+                                    "Mäng - liikumiseks kasuta nooli, vahepausi alustamiseks või lõpetamiseks vajuta 'Space' või 'Enter'."
+                                    "Tagasi peamenüüsse suundumiseks vajuta 'Esc'.\n"
+                                    "Kui soovid koolis mängu mängida, siis vajuta 'TAB' :)\n"
                                     "\n"
                                     "Mängu autorid:\n"
                                     "Eduard Šengals, Meelis Tapo 2014")

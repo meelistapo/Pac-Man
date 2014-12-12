@@ -1,5 +1,11 @@
 __author__ = 'Meelis Tapo'
 __author__ = 'Eduard Šengals'
+
+'''
+Selles failis on defineeritud mängu sisuline loogika
+ehk see kuidas liikuvad ja liikumatud objektid mängus käituvad.
+'''
+
 import random
 from game import *
 class moving_obj:

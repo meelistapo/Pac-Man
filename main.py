@@ -1,10 +1,16 @@
 __author__ = 'Meelis Tapo'
 __author__ = 'Eduard Šengals'
 
+'''
+Selles failis on defineeritud mängu algparameetrid ja peamine loogika.
+Vastavalt sellele, kuidas mängija käitub kutsutakse siin välja
+alamfailides defineeritud funktsioonid.
+'''
+
 from tkinter import *
 from game import *
 from objects import *
-from random import randint
+
 #mängu akna parameetrid
 frame = Tk()
 frame.title("Pacversity")
@@ -14,7 +20,6 @@ menu = Canvas(frame, width=850, height=850, bg="black")
 menu.grid()
 
 #meedia sisselugemine
-#esmalt piltide sisselugemine
 immov_obj.wall_bak_img = PhotoImage(file="media/wall_bak.png")
 immov_obj.wall_mag_img = PhotoImage(file="media/wall_mag.png")
 immov_obj.wall_dok_img = PhotoImage(file="media/wall_dok.png")
@@ -28,24 +33,22 @@ moving_obj.pac_imgs.append([PhotoImage(file="media/pacs/pac_s_1.png"),
                             PhotoImage(file="media/pacs/pac_s_2.png")])
 moving_obj.pac_imgs.append([PhotoImage(file="media/pacs/pac_w_1.png"),
                             PhotoImage(file="media/pacs/pac_w_2.png")])
-moving_obj.ghost_imgs =[PhotoImage(file="media/ghosts/vilo.png"),
-                            PhotoImage(file="media/ghosts/vene.png"),
-                            PhotoImage(file="media/ghosts/prank.png"),
-                            PhotoImage(file="media/ghosts/niitsoo.png"),
-                            PhotoImage(file="media/ghosts/hein.png"),
-                            PhotoImage(file="media/ghosts/plank.png"),
+moving_obj.ghost_imgs =[PhotoImage(file="media/ghosts/niitsoo.png"),
                             PhotoImage(file="media/ghosts/tamm.png"),
                             PhotoImage(file="media/ghosts/nolv.png"),
                             PhotoImage(file="media/ghosts/pungas.png"),
+                            PhotoImage(file="media/ghosts/prank.png"),
                             PhotoImage(file="media/ghosts/paales.png"),
                             PhotoImage(file="media/ghosts/annamaa.png"),
-                            PhotoImage(file="media/ghosts/palm.png")]
-#tekstide sisselugemine
-textfile = open("media/texts.txt", encoding="utf-8")
-ghostmsg = {}
-for line in textfile:
-    ghostmsg[line.split(": ")[0].lstrip("\ufeff")] = line.split(": ")[1].split("; ")
-textfile.close()
+                            PhotoImage(file="media/ghosts/palm.png"),
+                            PhotoImage(file="media/ghosts/hein.png"),
+                            PhotoImage(file="media/ghosts/plank.png"),
+                            PhotoImage(file="media/ghosts/vilo.png"),
+                            PhotoImage(file="media/ghosts/vene.png"),
+                            PhotoImage(file="media/ghosts/ghost_blue.png"),
+                            PhotoImage(file="media/ghosts/ghost_green.png"),
+                            PhotoImage(file="media/ghosts/ghost_red.png"),
+                            PhotoImage(file="media/ghosts/ghost_orange.png")]
 
 #mängu loomine ja peamenüü avamine
 thisgame = game(canvas)
@@ -117,7 +120,7 @@ def spacebar_press(event):
         #kui valid menüüs 'Abi', siis saad abi :)
         elif thisgame.selection == 3:
             thisgame.create_help_message()
-        #kui valid menüüs 'Sulge, siis mäng suletakse
+        #kui valid menüüs 'Sulge', siis mäng suletakse
         elif thisgame.selection == 4:
             frame.destroy()
     #mängus vahepausi alustamine/lõpetamine
@@ -151,6 +154,32 @@ def escape_press(event):
         canvas.grid_forget()
         menu.grid()
 
+def tab_press(event):
+    #funktsioon, mis muudab mängu "õppejõusõbralikuks" ja tagasi
+    if thisgame.hide == False:
+        for i in range(4):
+            canvas.delete(moving_obj.ghosts[i].id)
+            moving_obj.ghosts[i].id = canvas.create_image(moving_obj.ghosts[i].pos, image=moving_obj.ghost_imgs[i+12])
+            moving_obj.ghosts[i].start_img = moving_obj.ghost_imgs[i+12]
+        thisgame.hide = True
+    else:
+        names = ['niitsoo','tamm','nolv','pungas','prank','paales', 'annamaa','palm','hein', 'plank', 'vilo', 'vene']
+        for i in range(4):
+            canvas.delete(moving_obj.ghosts[i].id)
+            if thisgame.level == 'bak':
+                moving_obj.ghosts[i].id = canvas.create_image(moving_obj.ghosts[i].pos, image=moving_obj.ghost_imgs[i])
+                moving_obj.ghosts[i].name = names[i]
+                moving_obj.ghosts[i].start_img = moving_obj.ghost_imgs[i]
+            elif thisgame.level == 'mag':
+                moving_obj.ghosts[i].id = canvas.create_image(moving_obj.ghosts[i].pos, image=moving_obj.ghost_imgs[i+4])
+                moving_obj.ghosts[i].name = names[i+4]
+                moving_obj.ghosts[i].start_img = moving_obj.ghost_imgs[i+4]
+            else:
+                moving_obj.ghosts[i].id = canvas.create_image(moving_obj.ghosts[i].pos, image=moving_obj.ghost_imgs[i+8])
+                moving_obj.ghosts[i].name = names[i+8]
+                moving_obj.ghosts[i].start_img = moving_obj.ghost_imgs[i+8]
+        thisgame.hide = False
+
 # seon klahvid vastavate funktsioonidega
 frame.bind_all("<Up>", up_press)
 frame.bind_all("<Down>",  down_press)
@@ -159,6 +188,7 @@ frame.bind_all("<Right>", right_press)
 frame.bind_all("<space>", spacebar_press)
 frame.bind_all("<Escape>", escape_press)
 frame.bind_all("<Return>", spacebar_press)
+frame.bind_all("<KeyPress-Tab>", tab_press)
 
 #----------------------------------------------------------------
 #funktsioon, mis määrab objektide käitumise ajaühiku möödumisel
@@ -172,17 +202,14 @@ def reload():
         thisgame.warnings.config(text="HOIATUSI: "+str(moving_obj.pac.warnings)) #hoiatuste loenduri uuendamine
         #kui pac põrkab tondiga kokku, siis kuvatakse selle tondi spetsiifiline hoiatus
         if moving_obj.pac.coll_name is not None:
-            warning_msg = ghostmsg[moving_obj.pac.coll_name][randint(0,1)]
-            if '|' in warning_msg:
-                warning_txt = warning_msg.split('|')
-                warning_msg = warning_txt[0]+'\n'+warning_txt[1].strip()
-            thisgame.last_warning.config(text=warning_msg, justify='left')
+            thisgame.create_warning_message()
             thisgame.turns_to_show_warning = 120
             moving_obj.pac.coll_name = None
+        #hoiatuse tekst kuvatakse seni kuni timer ei ole 0
         if thisgame.turns_to_show_warning:
-            thisgame.turns_to_show_warning -= 1 #hoiatuse teksti kuvamise timeri vähendamine
+            thisgame.turns_to_show_warning -= 1
         else:
-            thisgame.last_warning.config(text="") #hoiatuse teksti ekraanilt kustutamine
+            thisgame.last_warning.config(text="")
         #kui hoiatusi on kokku kolm, siis kuvatakse kaotussõnum ja viiakse sind peamenüüsse
         if moving_obj.pac.warnings == 3:
             thisgame.state = "pause"
